@@ -1,3 +1,4 @@
+import os.path
 from urllib.request import urlretrieve
 import requests
 import urllib3.exceptions
@@ -6,7 +7,12 @@ test_http_site = 'http://httpforever.com'
 
 def get_file():
     url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/http/data.txt"
-    urlretrieve(url, 'data.txt')
+    if os.path.isfile('data.txt'):
+        print("data.txt already exists")
+        return
+    else:
+        print("downloading data.txt proxy list")
+        urlretrieve(url, 'data.txt')
 
 def http_proxy_test(ip_address, port):
     ip_port_str = ip_address + ":" + str(port)
@@ -16,7 +22,12 @@ def http_proxy_test(ip_address, port):
     try:
         response = requests.get(test_http_site, proxies=proxies)
         if response.status_code == 200:
-            print("[+] This one works: " + "http://" + ip_address + ":" + str(port))
+            full_string = "http://" + ip_address + ":" + str(port)
+            print("[+] This one works: " + full_string)
+            f = open("proxies.txt", "w")
+            f.write(full_string)
+            f.close()
+
         else:
             print("[-] This one doesn't "+ "http://" + ip_address + ":" + str(port) )
     except ConnectionResetError:
