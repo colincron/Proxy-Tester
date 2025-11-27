@@ -1,53 +1,111 @@
-import os.path
+import os.path, ipaddress
 from urllib.request import urlretrieve
 import requests
 import urllib3.exceptions
 
-# Initial Commit
 
 test_http_site = 'http://httpforever.com'
+test_https_site = 'https://docs.python.org/3/library/ipaddress.html'
 
-def get_file():
-    url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/http/data.txt"
-    if os.path.isfile('data.txt'):
-        print("data.txt already exists")
+def get_file(type):
+    if type.lower() == "http":
+        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/http/data.txt"
+    elif type.lower() == "https":
+        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/https/data.txt"
+
+    if os.path.isfile(type + '_data.txt'):
+        print(type + "_data.txt already exists")
         return
     else:
-        print("downloading data.txt proxy list")
-        urlretrieve(url, 'data.txt')
+        print("downloading " + type + "_data.txt proxy list")
+        urlretrieve(url, type + '_data.txt')
 
-def http_proxy_test(ip_address, port):
-    ip_port_str = ip_address + ":" + str(port)
-    proxies = {
-        'http': ip_port_str,
+def proxy_test(ip_address, port, type):
+    ipa = ipaddress.ip_address(ip_address)
+    str(ipa)
+    ip_port_str = str(ipa) + ":" + str(port)
+    if type.lower() == "http":
+        proxies = {
+            'http': "http://"+ip_port_str,
+            }
+        try:
+            response = requests.get(test_http_site, proxies=proxies)
+            if response.status_code == 200:
+                full_string = "http://" + str(ipa) + ":" + str(port)
+                print("[+] This one works: " + full_string)
+                file_writer(full_string, "http")
+
+            else:
+                print("[-] This one doesn't "+ "http://" + ip_address + ":" + str(port) )
+        except ConnectionResetError:
+            print("[-] Connection reset by peer. Connection Reset Error")
+        except urllib3.exceptions.MaxRetryError:
+            print("[-] Max retries. MaxRetryError")
+        except requests.exceptions.ProxyError:
+            print("[-] Max retries exceeded. requests.exceptions.ProxyError")
+        except requests.exceptions.TooManyRedirects:
+            print("[-] Too many redirects. requests.exceptions.TooManyRedirects")
+        except requests.exceptions.ConnectionError:
+            print("[-] Connection aborted - Remote end closed connection without response")
+    elif type.lower() == "https":
+        proxies = {
+            'https': "https://" + ip_port_str,
         }
-    try:
-        response = requests.get(test_http_site, proxies=proxies)
-        if response.status_code == 200:
-            full_string = "http://" + ip_address + ":" + str(port)
-            print("[+] This one works: " + full_string)
-            f = open("proxies.txt", "a")
-            f.write(full_string)
-            f.close()
+        # print(ip_port_str)
+        try:
+            response = requests.get(test_https_site, proxies=proxies)
+            if response.status_code == 200:
+                full_string = "https://" + str(ipa) + ":" + str(port)
+                print("[+] This one works: " + full_string)
+                file_writer(full_string, type)
 
-        else:
-            print("[-] This one doesn't "+ "http://" + ip_address + ":" + str(port) )
-    except ConnectionResetError:
-        print("[-] Connection reset by peer. Connection Reset Error")
-    except urllib3.exceptions.MaxRetryError:
-        print("[-] Max retries. MaxRetryError")
-    except requests.exceptions.ProxyError:
-        print("[-] Max retries exceeded. requests.exceptions.ProxyError")
-    except requests.exceptions.TooManyRedirects:
-        print("[-] Too many redirects. requests.exceptions.TooManyRedirects")
+            else:
+                print("[-] This one doesn't " + "https://" + ip_address + ":" + str(port))
+        except ConnectionResetError:
+            print("[-] Connection reset by peer. Connection Reset Error")
+        except urllib3.exceptions.MaxRetryError:
+            print("[-] Max retries. MaxRetryError")
+        except requests.exceptions.ProxyError:
+            print("[-] Max retries exceeded. requests.exceptions.ProxyError")
+        except requests.exceptions.TooManyRedirects:
+            print("[-] Too many redirects. requests.exceptions.TooManyRedirects")
+        except requests.exceptions.ConnectionError:
+            print("[-] Connection aborted - Remote end closed connection without response")
+
+def add_https():
+    file_path = "https_data.txt"
+    prefix = "https://
+
+    with open(file_path, "r") as file:
+        lines = file.readlines()
+
+    modified_lines = [prefix + line for line in lines]
+    with open(file_path, "w") as file:
+        file.writelines(modified_lines)
 
 
-def file_handler():
-    get_file()
-    with open('data.txt') as lines:
-        for line in lines:
-            ip = line.replace("http://","").split(":")[0]
-            port = line.replace("http://","").split(":")[1]
-            http_proxy_test(ip, port)
+def file_handler(type):
+    get_file(type)
+    with open(type + '_data.txt') as lines:
+        if type.lower() == "http":
+            for line in lines:
+                ip = line.replace("http://","").split(":")[0]
+                port = line.replace("http://","").split(":")[1]
+                proxy_test(ip, port, type)
+        elif type.lower() == "https":
+            for line in lines:
+                ip = line.replace("https://","").split(":")[0]
+                port = line.replace("https://","").split(":")[1]
+                proxy_test(ip, port, type)
 
-file_handler()
+def file_writer(full_string, type):
+    f = open(type + "_proxies.txt", "a")
+    f.write(full_string)
+    f.close()
+
+if __name__ == "__main__":
+    user_input = str(input("Are you testing http or https today?"))
+    if user_input.lower() == "http":
+        file_handler("http")
+    elif user_input.lower() == "https":
+        file_handler("https")
