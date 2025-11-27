@@ -26,7 +26,7 @@ def http_proxy_test(ip_address, port):
         if response.status_code == 200:
             full_string = "http://" + ip_address + ":" + str(port)
             print("[+] This one works: " + full_string)
-            f = open("proxies.txt", "w")
+            f = open("proxies.txt", "a")
             f.write(full_string)
             f.close()
 
