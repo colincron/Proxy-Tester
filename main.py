@@ -3,6 +3,8 @@ from urllib.request import urlretrieve
 import requests
 import urllib3.exceptions
 
+# Initial Commit
+
 test_http_site = 'http://httpforever.com'
 
 def get_file():
