@@ -1,5 +1,3 @@
-Pulls a list of HTTP, HTTPS, or SOCKS4 proxies from https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/http/data.txt
-<br><br>
-Then tests them to make sure they're functional and outputs them to a new txt file
+Pulls a list of HTTP, HTTPS, SOCKS4, or SOCKS5 proxies from Proxifly, validates them, then outputs them to a txt file.
 <br><br>
 To use, run pip install -r requirements.txt and then run main.py
