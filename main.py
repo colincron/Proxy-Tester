@@ -91,7 +91,7 @@ def file_writer(full_string, type):
     f.close()
 
 if __name__ == "__main__":
-    user_input = str(input("Are you testing http, https, or socks4 today? "))
+    user_input = str(input("Are you testing http, https, socks4, or socks5 today? "))
     if user_input.lower() == "http":
         file_handler("http")
     elif user_input.lower() == "https":
