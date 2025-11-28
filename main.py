@@ -47,6 +47,8 @@ def file_handler(type):
         url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/https/data.txt"
     elif type == "socks4":
         url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks4/data.txt"
+    elif type == "socks5":
+        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks5/data.txt"
 
     if os.path.isfile(type + '_data.txt'):
         print(type + "_data.txt already exists\n")
@@ -77,6 +79,11 @@ def file_handler(type):
                 ip = line.replace("socks4://","").split(":")[0]
                 port = line.replace("socks4://", "").split(":")[1]
                 proxy_test(ip, port, "socks4")
+        elif type == "socks5":
+            for line in lines:
+                ip = line.replace("socks5://", "").split(":")[0]
+                port = line.replace("socks5://", "").split(":")[1]
+                proxy_test(ip, port, "socks5")
 
 def file_writer(full_string, type):
     f = open(type + "_proxies.txt", "a")
@@ -91,3 +98,5 @@ if __name__ == "__main__":
         file_handler("https")
     elif user_input.lower() == "socks4":
         file_handler("socks4")
+    elif user_input.lower() == "socks5":
+        file_handler("socks5")
