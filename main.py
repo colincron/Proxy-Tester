@@ -41,49 +41,30 @@ def proxy_test(ip_address, port, type):
         print("[-] " + str(ipa) + " seems to be down\n")
 
 def file_handler(type):
-    if type == "http":
-        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/http/data.txt"
-    elif type == "https":
-        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/https/data.txt"
-    elif type == "socks4":
-        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks4/data.txt"
-    elif type == "socks5":
-        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks5/data.txt"
+    url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/"+type+"/data.txt"
 
     if os.path.isfile(type + '_data.txt'):
         print(type + "_data.txt already exists\n")
-
     else:
         print("downloading " + type + "_data.txt proxy list\n")
         urlretrieve(url, type + '_data.txt')
-
     with open(type + '_data.txt') as lines:
-        if type == "http":
+        if type != "https":
             for line in lines:
-                ip = line.replace("http://","").split(":")[0]
-                port = line.replace("http://","").split(":")[1]
+                ip = line.replace(type + "://","").split(":")[0]
+                port = line.replace(type + "://","").split(":")[1]
                 proxy_test(ip, port, type)
         elif type == "https":
             for line in lines:
                 if line.startswith("https:"):
-                    ip = line.replace("https://","").split(":")[0]
-                    port = line.replace("https://","").split(":")[1]
+                    ip = line.replace(type + "://", "").split(":")[0]
+                    port = line.replace(type + "://", "").split(":")[1]
                     proxy_test(ip, port, type)
                 elif line.startswith("http:"):
-                    ip = line.replace("http://","").split(":")[0]
-                    port = line.replace("http://","").split(":")[1]
+                    ip = line.replace("http://", "").split(":")[0]
+                    port = line.replace("http://", "").split(":")[1]
                     proxy_test(ip, port, type)
-        elif type == "socks4":
-            for line in lines:
-                # print(line)
-                ip = line.replace("socks4://","").split(":")[0]
-                port = line.replace("socks4://", "").split(":")[1]
-                proxy_test(ip, port, "socks4")
-        elif type == "socks5":
-            for line in lines:
-                ip = line.replace("socks5://", "").split(":")[0]
-                port = line.replace("socks5://", "").split(":")[1]
-                proxy_test(ip, port, "socks5")
+
 
 def file_writer(full_string, type):
     f = open(type + "_proxies.txt", "a")
