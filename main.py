@@ -1,10 +1,7 @@
-import os.path, ipaddress
+import os.path, ipaddress, requests, urllib3.exceptions
 from urllib.request import urlretrieve
-import requests
-import urllib3.exceptions
 
-test_http_site = 'http://httpforever.com'
-test_https_site = 'https://docs.python.org/3/library/ipaddress.html'
+test_site = 'http://httpforever.com'
 
 def proxy_test(ip_address, port, type):
     ipa = ipaddress.ip_address(ip_address)
@@ -17,10 +14,7 @@ def proxy_test(ip_address, port, type):
             type: type+"://"+ip_port_str,
             }
         try:
-            if type == "https":
-                response = requests.get(test_https_site, proxies=proxies)
-            elif type == "http":
-                response = requests.get(test_http_site, proxies=proxies)
+            response = requests.get(test_site, proxies=proxies)
 
             if response.status_code == 200:
                 full_string = type+"://" + str(ipa) + ":" + str(port)
@@ -28,35 +22,39 @@ def proxy_test(ip_address, port, type):
                 file_writer(full_string, "http")
             else:
                 print("[-] This one doesn't "+ "http://" + ip_address + ":" + str(port) )
+
         except ConnectionResetError:
-            print("[-] Connection reset by peer. Connection Reset Error")
+            print("[-] Connection reset by peer. Connection Reset Error\n")
         except TimeoutError:
-            print("[-] TimeoutError")
+            print("[-] TimeoutError\n")
         except urllib3.exceptions.MaxRetryError:
-            print("[-] Max retries. MaxRetryError")
+            print("[-] Max retries. MaxRetryError\n")
         except requests.exceptions.ProxyError:
-            print("[-] Max retries exceeded. requests.exceptions.ProxyError")
+            print("[-] Max retries exceeded. requests.exceptions.ProxyError\n")
         except requests.exceptions.TooManyRedirects:
-            print("[-] Too many redirects. requests.exceptions.TooManyRedirects")
+            print("[-] Too many redirects. requests.exceptions.TooManyRedirects\n")
         except requests.exceptions.ConnectionError:
-            print("[-] Connection aborted - Remote end closed connection without response")
+            print("[-] Connection aborted - Remote end closed connection without response\n")
         except urllib3.exceptions.ReadTimeoutError:
-            print("[-] ReadTimeoutError")
+            print("[-] ReadTimeoutError\n")
     else:
         print("[-] " + str(ipa) + " seems to be down\n")
 
 def file_handler(type):
-    if type.lower() == "http":
+    if type == "http":
         url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/http/data.txt"
-    elif type.lower() == "https":
+    elif type == "https":
         url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/https/data.txt"
+    elif type == "socks4":
+        url = "https://raw.githubusercontent.com/proxifly/free-proxy-list/refs/heads/main/proxies/protocols/socks4/data.txt"
 
     if os.path.isfile(type + '_data.txt'):
-        print(type + "_data.txt already exists")
+        print(type + "_data.txt already exists\n")
 
     else:
-        print("downloading " + type + "_data.txt proxy list")
+        print("downloading " + type + "_data.txt proxy list\n")
         urlretrieve(url, type + '_data.txt')
+
     with open(type + '_data.txt') as lines:
         if type == "http":
             for line in lines:
@@ -65,9 +63,20 @@ def file_handler(type):
                 proxy_test(ip, port, type)
         elif type == "https":
             for line in lines:
-                ip = line.replace("https://","").split(":")[0]
-                port = line.replace("https://","").split(":")[1]
-                proxy_test(ip, port, type)
+                if line.startswith("https:"):
+                    ip = line.replace("https://","").split(":")[0]
+                    port = line.replace("https://","").split(":")[1]
+                    proxy_test(ip, port, type)
+                elif line.startswith("http:"):
+                    ip = line.replace("http://","").split(":")[0]
+                    port = line.replace("http://","").split(":")[1]
+                    proxy_test(ip, port, type)
+        elif type == "socks4":
+            for line in lines:
+                # print(line)
+                ip = line.replace("socks4://","").split(":")[0]
+                port = line.replace("socks4://", "").split(":")[1]
+                proxy_test(ip, port, "socks4")
 
 def file_writer(full_string, type):
     f = open(type + "_proxies.txt", "a")
@@ -80,3 +89,5 @@ if __name__ == "__main__":
         file_handler("http")
     elif user_input.lower() == "https":
         file_handler("https")
+    elif user_input.lower() == "socks4":
+        file_handler("socks4")
