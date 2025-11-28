@@ -19,9 +19,9 @@ def proxy_test(ip_address, port, type):
             if response.status_code == 200:
                 full_string = type+"://" + str(ipa) + ":" + str(port)
                 print("[+] This one works: " + full_string)
-                file_writer(full_string, "http")
+                file_writer(full_string, type)
             else:
-                print("[-] This one doesn't "+ "http://" + ip_address + ":" + str(port) )
+                print("[-] This one doesn't "+ type +"://" + ip_address + ":" + str(port) )
 
         except ConnectionResetError:
             print("[-] Connection reset by peer. Connection Reset Error\n")
